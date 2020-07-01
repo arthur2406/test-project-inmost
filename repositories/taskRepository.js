@@ -1,6 +1,6 @@
 'use strict';
 
-const { BaseRepository } = require('./baseRepository');
+const BaseRepository = require('./baseRepository');
 
 class TaskRepository extends BaseRepository {
   constructor() {
