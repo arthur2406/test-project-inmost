@@ -14,8 +14,3 @@ CREATE TABLE tasks (
   description VARCHAR(500) NOT NULL,
   status taskStatus NOT NULL
 );
-
-
-create table taks (
-  id SERIAL PRIMARY KEY
-);
