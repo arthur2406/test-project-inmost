@@ -31,6 +31,22 @@ class UserRepository extends BaseRepository {
     }
   }
 
+  async getUsers(page, itemsPerPage) {
+    try {
+      const text = `SELECT * FROM ${this.collectionName} ` +
+        `LIMIT ${itemsPerPage} OFFSET ${(page - 1) * itemsPerPage}`;
+      const client = await this.getClient();
+      const { rows } = await client.query(text);
+      client.release();
+      return rows;
+    } catch (e) {
+      if (e instanceof DBConnectionError) {
+        throw e;
+      }
+      throw new Error('Unable to get user');
+    }
+  }
+
   async getOneUser(search) {
     try {
       const column = search.email ? 'email' : 'user_id';
@@ -61,7 +77,7 @@ class UserRepository extends BaseRepository {
       const setClause = rowData.join(', ');
       const query = `UPDATE ${this.collectionName} ` +
         `SET ${setClause} ` +
-        `WHERE id = ${userId} ` +
+        `WHERE user_id = ${userId} ` +
         'RETURNING * ;';
       const client = await this.getClient();
       const { rows } = await client.query(query);
@@ -71,7 +87,7 @@ class UserRepository extends BaseRepository {
       if (e instanceof DBConnectionError) {
         throw e;
       }
-      throw new Error('Incorrect data passed to update user');
+      throw new Error('Email duplication error');
     }
   }
 
