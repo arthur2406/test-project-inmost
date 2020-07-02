@@ -39,6 +39,28 @@ class UserRepository extends BaseRepository {
     }
   }
 
+  async update(userId, data) {
+    const updates = data;
+    try {
+      const rowData = [];
+      Object.entries(updates).forEach(([key, value]) => {
+        if (key === 'id') return;
+        rowData.push(`${key} = '${value}'`);
+      });
+      const setClause = rowData.join(', ');
+      const query = `UPDATE ${this.collectionName} ` +
+        `SET ${setClause} ` +
+        `WHERE id = ${userId} ` +
+        'RETURNING * ;';
+      const client = await this.getClient();
+      const { rows } = await client.query(query);
+      client.release();
+      return rows[0];
+    } catch (e) {
+      throw new Error('Database error occured while trying to update user');
+    }
+  }
+
 
 }
 
