@@ -27,7 +27,7 @@ class UserRepository extends BaseRepository {
       if (e instanceof DBConnectionError) {
         throw e;
       }
-      throw new Error('Incorrect data passed to create user');
+      throw new Error('Unable to create user');
     }
   }
 
@@ -43,7 +43,7 @@ class UserRepository extends BaseRepository {
       if (e instanceof DBConnectionError) {
         throw e;
       }
-      throw new Error('Unable to get user');
+      throw new Error('Unable to get users');
     }
   }
 
@@ -71,6 +71,7 @@ class UserRepository extends BaseRepository {
     try {
       const rowData = [];
       Object.entries(updates).forEach(([key, value]) => {
+        value = value.replace('\'', '\'\'');
         if (key === 'id') return;
         rowData.push(`${key} = '${value}'`);
       });
@@ -87,7 +88,7 @@ class UserRepository extends BaseRepository {
       if (e instanceof DBConnectionError) {
         throw e;
       }
-      throw new Error('Email duplication error');
+      throw new Error('Unable to update user');
     }
   }
 
