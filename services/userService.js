@@ -18,14 +18,16 @@ class UserService {
     }
   }
 
-  async getUserByEmail(email) {
+  async getOneUser(search) {
     try {
-      const user = await UserRepository.getUserByEmail(email);
+      const user = await UserRepository.getOneUser(search);
       return user;
     } catch (e) {
       this.handleRepositoryError(e);
     }
   }
+
+
 
   async update(userId, data) {
     try {
