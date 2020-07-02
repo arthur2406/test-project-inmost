@@ -30,18 +30,8 @@ const router = Router();
 // }, responseMiddleware);
 
 router.get('/me', verifyAuth, async (req, res, next) => {
-  try {
-    const user = await UserService.getUserById(req.user.user_id);
-    if (user) {
-      res.data = user;
-      res.status(200);
-    } else {
-      res.status(404);
-      next(new Error('User not found'));
-    }
-  } catch (err) {
-    next(err);
-  }
+  res.data = req.user;
+  res.status(200);
   next();
 }, responseMiddleware);
 
@@ -77,7 +67,7 @@ router.post('/', async (req, res, next) => {
   try {
     const user = await UserService.create(body);
     delete user.password;
-    const token = generateUserToken(user.email, user.id, user.first_name, user.last_name);
+    const token = generateUserToken(user.email, user.user_id, user.first_name, user.last_name);
     res.data = user;
     res.data.token = token;
     res.status(200);
@@ -100,7 +90,7 @@ router.post('/login', async (req, res, next) => {
     next(new Error('Please enter a valid Email and Password'));
   }
   try {
-    const user = await UserService.getUserByEmail(email);
+    const user = await UserService.getOneUser({ email });
     if (!user) {
       res.status(404);
       next(new Error('User with this email does not exist!'));
