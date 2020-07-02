@@ -24,7 +24,7 @@ class TaskRepository extends BaseRepository {
       if (err instanceof DBConnectionError) {
         throw err;
       }
-      throw new Error('Incorrect data passed to create task');
+      throw new Error('Unable to create task');
     }
   }
 
@@ -33,6 +33,7 @@ class TaskRepository extends BaseRepository {
     try {
       const rowData = [];
       Object.entries(updates).forEach(([key, value]) => {
+        value = value.replace('\'', '\'\'');
         if (key === 'id') return;
         rowData.push(`${key} = '${value}'`);
       });
@@ -49,16 +50,24 @@ class TaskRepository extends BaseRepository {
       if (e instanceof DBConnectionError) {
         throw e;
       }
-      throw new Error('Incorrect data passed to update task');
+      throw new Error('Unable to update task');
     }
   }
 
-  async updateUser(taskId, userId) {
+  async updateUser(taskId, ownerId, newOwnerId) {
     try {
-      const query = `UPDATE ${this.collectionName} ` +
-        `SET user_id = ${userId} ` +
-        `WHERE id = ${taskId} ` +
-        'RETURNING * ;';
+      // const query =
+      //   `IF EXISTS (SELECT 1 FROM users WHERE user_id = ${newOwnerId}) THEN ` +
+      //   `UPDATE ${this.collectionName} ` +
+      //   `SET user_id = ${newOwnerId} ` +
+      //   `WHERE id = ${taskId} AND user_id = ${ownerId} ` +
+      //   'RETURNING *; ' +
+      //   'END IF';
+      const query =
+        `UPDATE ${this.collectionName} ` +
+        `SET user_id = ${newOwnerId} ` +
+        `WHERE id = ${taskId} AND user_id = ${ownerId} AND EXISTS (SELECT 1 FROM users WHERE user_id = ${newOwnerId})` +
+        'RETURNING *; ';
       const client = await this.getClient();
       const { rows } = await client.query(query);
       client.release();
