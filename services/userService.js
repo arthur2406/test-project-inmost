@@ -9,6 +9,15 @@ class UserService {
     throw e;
   }
 
+  async getUsers(page, itemsPerPage) {
+    try {
+      const users = await UserRepository.getUsers(page, itemsPerPage);
+      return users;
+    } catch (e) {
+      this.handleRepositoryError(e);
+    }
+  }
+
   async create(data) {
     try {
       const user = await UserRepository.create(data);
