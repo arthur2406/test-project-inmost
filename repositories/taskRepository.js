@@ -15,7 +15,7 @@ class TaskRepository extends BaseRepository {
       throw new Error('Incorrect status');
     }
     try {
-      const text = 'INSERT INTO TASKS(user_id, title, description, status) ' +
+      const text = `INSERT INTO ${this.collectionName} (user_id, title, description, status) ` +
         'VALUES($1, $2, $3, $4) RETURNING *';
       const values = [data.user_id, data.title, data.description, data.status];
       const client = await this.getClient();
@@ -27,18 +27,54 @@ class TaskRepository extends BaseRepository {
     }
   }
 
-  async update(id, data) {
+  async update(taskId, data) {
+    const { userId, ...updates } = data;
+    const allowedUpdates = ['title', 'description', 'status'];
+    const isValidOperation = Object.keys(updates).every(update => allowedUpdates.includes(update));
+    if (!isValidOperation) {
+      throw new Error('Invalid updates');
+    }
+
     try {
       const rowData = [];
-      Object.entries(data).forEach(arr => {
+      Object.entries(updates).forEach(arr => {
+        if (arr[0] === 'id') return;
         rowData.push(`${arr[0]} = '${arr[1]}'`);
       });
       const setClause = rowData.join(', ');
       const query = `UPDATE ${this.collectionName} ` +
         `SET ${setClause} ` +
-        `WHERE id = ${id} ` +
+        `WHERE id = ${taskId} AND user_id = ${userId} ` +
         'RETURNING * ;';
+      const client = await this.getClient();
+      const { rows } = await client.query(query);
+      client.release();
+      return rows[0];
+    } catch (e) {
+      throw new Error('Incorrect data ta update task');
+    }
+  }
 
+  async updateUser(taskId, userId) {
+    try {
+      const query = `UPDATE ${this.collectionName} ` +
+        `SET user_id = ${userId} ` +
+        `WHERE id = ${taskId} ` +
+        'RETURNING * ;';
+      const client = await this.getClient();
+      const { rows } = await client.query(query);
+      client.release();
+      return rows[0];
+    } catch (e) {
+      throw new Error('Incorrect userId');
+    }
+  }
+
+  async delete(taskId, userId) {
+    try {
+      const query = `DELETE FROM ${this.collectionName} ` +
+        `WHERE id = ${taskId} AND user_id = ${userId}` +
+        'RETURNING * ;';
       const client = await this.getClient();
       const { rows } = await client.query(query);
       client.release();
