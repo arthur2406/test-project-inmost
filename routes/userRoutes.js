@@ -1,15 +1,17 @@
 /* eslint-disable camelcase */
 'use strict';
 
+const { Router } = require('express');
 const UserService = require('../services/userService');
 const responseMiddleware = require('../middlewares/response.middleware');
-const { Router } = require('express');
+const verifyAuth = require('../middlewares/verifyAuth.middleware');
 const {
   hashPassword,
   isValidEmail,
   validatePassword,
   isEmpty,
-  generateUserToken
+  generateUserToken,
+  comparePassword
 } = require('../helpers/validations');
 
 const router = Router();
@@ -26,7 +28,7 @@ const router = Router();
 //   next();
 // }, responseMiddleware);
 
-router.get('/:id', async (req, res, next) => {
+router.get('/me', verifyAuth, async (req, res, next) => {
   try {
     const user = await UserService.searchById(req.params.id);
     if (user) {
@@ -81,6 +83,77 @@ router.post('/', async (req, res, next) => {
     next(e);
   }
 
-});
+  next();
+}, responseMiddleware);
+
+router.post('/login', async (req, res, next) => {
+  const { email, password } = req.body;
+  if (isEmpty(email) || isEmpty(password)) {
+    res.status(400);
+    next(new Error('Email or Password detail is missing'));
+  }
+  if (!isValidEmail(email) || !validatePassword(password)) {
+    res.status(400);
+    next(new Error('Please enter a valid Email and Password'));
+  }
+  try {
+    const user = await UserService.getUserByEmail(email);
+    if (!user) {
+      res.status(404);
+      next(new Error('User with this email does not exist!'));
+    }
+
+    if (!comparePassword(user.password, password)) {
+      res.status(400);
+      next(new Error('Provided password is incorrect'));
+    }
+
+    const token = generateUserToken(user.email, user.id, user.first_name, user.last_name);
+    delete user.password;
+    res.data = user;
+    res.data.token = token;
+  } catch (e) {
+    next(e);
+  }
+
+  next();
+
+}, responseMiddleware);
+
+router.put('/me', verifyAuth, async (req, res, next) => {
+  const updates = req.body;
+  const allowedUpdates = ['first_name', 'last_name', 'email', 'password'];
+  const isValidOperation = Object.keys(updates).every(update => allowedUpdates.includes(update));
+  if (!isValidOperation) {
+    res.status('400');
+    next(new Error('Invalid updates'));
+  }
+
+  for (const val of Object.values(updates)) {
+    if (isEmpty(val)) {
+      res.status(400);
+      next(new Error('Any field cannot be empty'));
+    }
+  }
+
+  try {
+    const user = await UserService.update(req.params.id, req.body);
+    if (user) {
+      res.data = user;
+      res.status(200);
+    } else {
+      res.status(404);
+      next(new Error('User not found'));
+    }
+  } catch (e) {
+    next(e);
+  }
+
+  next();
+}, responseMiddleware);
+
+router.delete('/me', verifyAuth, async (req, res, next) => {
+
+}, responseMiddleware);
 
 module.exports = router;
