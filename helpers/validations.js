@@ -14,14 +14,10 @@ const isEmpty = input => {
   }
   if (input.replace(/\s/g, '').length) {
     return false;
-  } return true;
+  }
+  return true;
 };
 
-const empty = input => {
-  if (input === undefined || input === '') {
-    return true;
-  }
-};
 
 const isValidEmail = email => {
   const regEx = /\S+@\S+\.\S+/;
@@ -55,5 +51,4 @@ module.exports = {
   hashPassword,
   comparePassword,
   isEmpty,
-  empty
 };
