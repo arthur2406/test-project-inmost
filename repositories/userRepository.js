@@ -61,6 +61,22 @@ class UserRepository extends BaseRepository {
     }
   }
 
+  //will not delete
+
+  async delete(userId) {
+    try {
+      const query = `DELETE FROM ${this.collectionName} ` +
+        `WHERE user_id = ${userId}` +
+        'RETURNING * ;';
+      const client = await this.getClient();
+      const { rows } = await client.query(query);
+      client.release();
+      return rows[0];
+    } catch (e) {
+      throw new Error('Database error occured while trying to delete user');
+    }
+  }
+
 
 }
 
