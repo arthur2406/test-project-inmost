@@ -1,8 +1,9 @@
+/* eslint-disable camelcase */
 'use strict';
 
 const BaseRepository = require('./baseRepository');
 
-const statuses = ['View', 'In Progress', 'Done'];
+
 
 class TaskRepository extends BaseRepository {
   constructor() {
@@ -11,9 +12,6 @@ class TaskRepository extends BaseRepository {
 
 
   async create(data) {
-    if (!statuses.find(s => s ===  data.status)) {
-      throw new Error('Incorrect status');
-    }
     try {
       const text = `INSERT INTO ${this.collectionName} (user_id, title, description, status) ` +
         'VALUES($1, $2, $3, $4) RETURNING *';
@@ -23,18 +21,12 @@ class TaskRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (err) {
-      throw new Error('Incorrect data to create task');
+      throw new Error('Database error occured while trying to create task');
     }
   }
 
   async update(taskId, data) {
-    const { userId, ...updates } = data;
-    const allowedUpdates = ['title', 'description', 'status'];
-    const isValidOperation = Object.keys(updates).every(update => allowedUpdates.includes(update));
-    if (!isValidOperation) {
-      throw new Error('Invalid updates');
-    }
-
+    const { user_id, ...updates } = data;
     try {
       const rowData = [];
       Object.entries(updates).forEach(arr => {
@@ -44,14 +36,14 @@ class TaskRepository extends BaseRepository {
       const setClause = rowData.join(', ');
       const query = `UPDATE ${this.collectionName} ` +
         `SET ${setClause} ` +
-        `WHERE id = ${taskId} AND user_id = ${userId} ` +
+        `WHERE id = ${taskId} AND user_id = ${user_id} ` +
         'RETURNING * ;';
       const client = await this.getClient();
       const { rows } = await client.query(query);
       client.release();
       return rows[0];
     } catch (e) {
-      throw new Error('Incorrect data ta update task');
+      throw new Error('Database error occured while trying to update task');
     }
   }
 
@@ -66,7 +58,7 @@ class TaskRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (e) {
-      throw new Error('Incorrect userId');
+      throw new Error('Database error occured while trying to update task owner');
     }
   }
 
@@ -80,7 +72,7 @@ class TaskRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (e) {
-      throw new Error('Incorrect data ta update task');
+      throw new Error('Database error occured while trying to delete task');
     }
   }
 }

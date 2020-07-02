@@ -8,12 +8,14 @@ class BaseRepository {
     this.pool = new Pool();
   }
 
+
   async getClient() {
     try {
       const client = await this.pool.connect();
       return client;
     } catch  (err) {
-      this.handleError(new Error('Unable to connect to the database'));
+      console.error(err);
+      throw new Error('Database error');
     }
   }
 
