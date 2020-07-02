@@ -18,17 +18,32 @@ class TaskService {
     }
   }
 
-  async update(id, data) {
+  async update(taskId, data) {
     try {
-      const task = await TaskRepository.update(id, data);
+      const task = await TaskRepository.update(taskId, data);
       return task;
     } catch (e) {
       this.handleRepositoryError(e);
     }
   }
 
+  async updateUser(taskId, userId) {
+    try {
+      const task = await TaskRepository.updateUser(taskId, userId);
+      return task;
+    } catch (e) {
+      this.handleRepositoryError(e);
+    }
+  }
 
-
+  async delete(taskId, userId) {
+    try {
+      const task = await TaskRepository.delete(taskId, userId);
+      return task;
+    } catch (e) {
+      this.handleRepositoryError(e);
+    }
+  }
 }
 
 module.exports = new TaskService();
