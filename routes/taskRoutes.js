@@ -4,6 +4,7 @@
 const { Router } = require('express');
 const TaskService = require('../services/userService');
 const responseMiddleware = require('../middlewares/response.middleware');
+const errorHandlingMiddleware = require('../middlewares/error.handling.middleware');
 const verifyAuth = require('../middlewares/verifyAuth.middleware');
 const { isEmpty } = require('../helpers/validations');
 
@@ -11,7 +12,7 @@ const router = Router();
 
 // GET /api/tasks/?status={status}&sortByUsers
 
-// router.get('/:id', auth, async (req, res, next) => {
+// router.get('/me', verifyAuth, async (req, res, next) => {
 //   try {
 //     const task = await TaskService.searchById(id);
 //   } catch (e) {
@@ -47,6 +48,7 @@ router.post('/', verifyAuth, async (req, res, next) => {
     res.data = task;
     res.status(201);
   } catch (e) {
+    res.status(500);
     next(e);
   }
 
@@ -90,6 +92,7 @@ router.put('/:id', verifyAuth, async (req, res, next) => {
       next(new Error('Task not found'));
     }
   } catch (e) {
+    res.status(500);
     next(e);
   }
 
@@ -107,8 +110,11 @@ router.put('/:task_id/:user_id', verifyAuth, async (req, res, next) => {
       next(new Error('Incorrect task_id'));
     }
   } catch (e) {
+    res.status(500);
     next(e);
   }
+
+  next();
 }, responseMiddleware);
 
 
@@ -123,10 +129,14 @@ router.delete('/:id', verifyAuth, async (req, res, next) => {
       next(new Error('Task not found'));
     }
   } catch (e) {
+    res.status(500);
     next(e);
   }
+
+  next();
 }, responseMiddleware);
 
+router.use(errorHandlingMiddleware);
 
 
 module.exports = router;

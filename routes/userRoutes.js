@@ -4,6 +4,7 @@
 const { Router } = require('express');
 const UserService = require('../services/userService');
 const responseMiddleware = require('../middlewares/response.middleware');
+const errorHandlingMiddleware = require('../middlewares/error.handling.middleware');
 const verifyAuth = require('../middlewares/verifyAuth.middleware');
 const {
   hashPassword,
@@ -30,7 +31,7 @@ const router = Router();
 
 router.get('/me', verifyAuth, async (req, res, next) => {
   try {
-    const user = await UserService.searchById(req.params.id);
+    const user = await UserService.getUserById(req.user.user_id);
     if (user) {
       res.data = user;
       res.status(200);
@@ -43,6 +44,7 @@ router.get('/me', verifyAuth, async (req, res, next) => {
   }
   next();
 }, responseMiddleware);
+
 
 router.post('/', async (req, res, next) => {
   const {
@@ -80,6 +82,7 @@ router.post('/', async (req, res, next) => {
     res.data.token = token;
     res.status(200);
   } catch (e) {
+    res.status(400);
     next(e);
   }
 
@@ -113,6 +116,7 @@ router.post('/login', async (req, res, next) => {
     res.data = user;
     res.data.token = token;
   } catch (e) {
+    res.status(400);
     next(e);
   }
 
@@ -146,6 +150,7 @@ router.put('/me', verifyAuth, async (req, res, next) => {
       next(new Error('User not found'));
     }
   } catch (e) {
+    res.status(400);
     next(e);
   }
 
@@ -158,8 +163,11 @@ router.delete('/me', verifyAuth, async (req, res, next) => {
     res.data = user;
     res.status(200);
   } catch (e) {
+    res.status(400);
     next(e);
   }
 }, responseMiddleware);
+
+router.use(errorHandlingMiddleware);
 
 module.exports = router;
