@@ -29,12 +29,12 @@ router.post('/', verifyAuth, async (req, res, next) => {
 
   if (isEmpty(title) || isEmpty(description) || isEmpty(status)) {
     res.status(400);
-    next(new Error('Title, description and status cannot be empty'));
+    return next(new Error('Title, description and status cannot be empty'));
   }
 
   if (!statuses.includes(status)) {
     res.status(400);
-    next(new Error('Status should be "View", "In progress" or "Done"'));
+    return next(new Error('Status should be "View", "In progress" or "Done"'));
   }
 
   try {
@@ -49,10 +49,10 @@ router.post('/', verifyAuth, async (req, res, next) => {
     res.status(201);
   } catch (e) {
     res.status(500);
-    next(e);
+    return next(e);
   }
 
-  next();
+  return next();
 }, responseMiddleware);
 
 // PUT /api/tasks/{id}?status={status}
@@ -63,19 +63,19 @@ router.put('/:id', verifyAuth, async (req, res, next) => {
   const isValidOperation = Object.keys(updates).every(update => allowedUpdates.includes(update));
   if (!isValidOperation) {
     res.status(400);
-    next(new Error('Invalid updates'));
+    return next(new Error('Invalid updates'));
   }
 
   for (const val of Object.values(updates)) {
     if (isEmpty(val)) {
       res.status(400);
-      next(new Error('Any field cannot be empty'));
+      return next(new Error('Any field cannot be empty'));
     }
   }
 
   if (updates.status && !status.includes(updates.status)) {
     res.status(400);
-    next(new Error('Status should be "View", "In progress" or "Done"'));
+    return next(new Error('Status should be "View", "In progress" or "Done"'));
   }
 
   try {
@@ -89,14 +89,14 @@ router.put('/:id', verifyAuth, async (req, res, next) => {
       res.status(200);
     } else {
       res.status(404);
-      next(new Error('Task not found'));
+      return next(new Error('Task not found'));
     }
   } catch (e) {
     res.status(500);
-    next(e);
+    return next(e);
   }
 
-  next();
+  return next();
 }, responseMiddleware);
 
 router.put('/:task_id/:user_id', verifyAuth, async (req, res, next) => {
@@ -107,14 +107,14 @@ router.put('/:task_id/:user_id', verifyAuth, async (req, res, next) => {
       res.status(200);
     } else {
       res.status(404);
-      next(new Error('Incorrect task_id'));
+      return next(new Error('Incorrect task_id'));
     }
   } catch (e) {
     res.status(500);
-    next(e);
+    return next(e);
   }
 
-  next();
+  return next();
 }, responseMiddleware);
 
 
@@ -126,14 +126,14 @@ router.delete('/:id', verifyAuth, async (req, res, next) => {
       res.status(200);
     } else {
       res.status(404);
-      next(new Error('Task not found'));
+      return next(new Error('Task not found'));
     }
   } catch (e) {
     res.status(500);
-    next(e);
+    return next(e);
   }
 
-  next();
+  return next();
 }, responseMiddleware);
 
 router.use(errorHandlingMiddleware);
