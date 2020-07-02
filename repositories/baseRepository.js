@@ -2,6 +2,13 @@
 
 const { Pool } = require('pg');
 
+class DBConnectionError extends Error {
+  constructor(args) {
+    super(args);
+    this.name = 'DatabaseError';
+  }
+}
+
 class BaseRepository {
   constructor(collectionName) {
     this.collectionName = collectionName;
@@ -14,11 +21,9 @@ class BaseRepository {
       const client = await this.pool.connect();
       return client;
     } catch  (err) {
-      console.error(err);
-      throw new Error('Database error');
+      throw new DBConnectionError('Database connection error occured');
     }
   }
-
 }
 
-module.exports = BaseRepository;
+module.exports = { BaseRepository, DBConnectionError };
