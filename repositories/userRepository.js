@@ -23,7 +23,19 @@ class UserRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (err) {
-      throw new Error('Database error occured while trying to create user');
+      throw new Error('Database error occured while trying to create taskr');
+    }
+  }
+
+  async getUserByEmail(email) {
+    try {
+      const text = 'SELECT * FROM users WHERE email = $1';
+      const client = await this.getClient();
+      const { rows } = await client.query(text, [email]);
+      client.release();
+      return rows[0];
+    } catch (err) {
+      throw new Error('Database error occured while trying to create taskr');
     }
   }
 
