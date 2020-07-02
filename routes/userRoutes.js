@@ -24,7 +24,7 @@ router.get('/:page', async (req, res, next) => {
       res.status(400);
       return next(new Error('Page should be >= 1 '));
     }
-    const users = await UserService(req.params.page, req.query.items || 10);
+    const users = await UserService.getUsers(req.params.page, req.query.items || 10);
     res.data = users;
     res.status(200);
   } catch (err) {
