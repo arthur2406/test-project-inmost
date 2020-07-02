@@ -29,9 +29,9 @@ class TaskRepository extends BaseRepository {
     const { user_id, ...updates } = data;
     try {
       const rowData = [];
-      Object.entries(updates).forEach(arr => {
-        if (arr[0] === 'id') return;
-        rowData.push(`${arr[0]} = '${arr[1]}'`);
+      Object.entries(updates).forEach(([key, value]) => {
+        if (key === 'id') return;
+        rowData.push(`${key} = '${value}'`);
       });
       const setClause = rowData.join(', ');
       const query = `UPDATE ${this.collectionName} ` +
