@@ -16,7 +16,15 @@ class UserService {
     } catch (e) {
       this.handleRepositoryError(e);
     }
+  }
 
+  async getUserByEmail(email) {
+    try {
+      const user = await UserRepository.getUserByEmail(email);
+      return user;
+    } catch (e) {
+      this.handleRepositoryError(e);
+    }
   }
 }
 
