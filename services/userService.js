@@ -1,6 +1,6 @@
 'use strict';
 
-const { UserRepository } = require('../repositories/userRepository');
+const UserRepository = require('../repositories/userRepository');
 
 class UserService {
 

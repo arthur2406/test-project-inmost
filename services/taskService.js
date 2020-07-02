@@ -1,6 +1,6 @@
 'use strict';
 
-const { TaskRepository } = require('../repositories/taskRepository');
+const TaskRepository = require('../repositories/taskRepository');
 
 class TaskService {
 
