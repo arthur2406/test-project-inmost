@@ -153,7 +153,13 @@ router.put('/me', verifyAuth, async (req, res, next) => {
 }, responseMiddleware);
 
 router.delete('/me', verifyAuth, async (req, res, next) => {
-
+  try {
+    const user = await UserService.delete(req.user.user_id);
+    res.data = user;
+    res.status(200);
+  } catch (e) {
+    next(e);
+  }
 }, responseMiddleware);
 
 module.exports = router;
