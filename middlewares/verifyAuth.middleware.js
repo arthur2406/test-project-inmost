@@ -7,16 +7,17 @@ const UserService = require('../services/userService');
 
 const verifyToken = async (req, res, next) => {
   try {
-    const token = req.header('Authorization').replace('Bearer', '');
+    const token = req.header('Authorization').replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const dbRow = UserService.getUserByEmail(decoded.email);
+    const email = decoded.email;
+    const dbRow = UserService.getOneUser({ email });
     if (!dbRow) {
-      res.status(401);
+      res.status(404);
       next(new Error('There is no user with this email'));
     }
     req.user = {
-      email: decoded.email,
       user_id: decoded.user_id,
+      email: decoded.email,
       first_name: decoded.first_name,
       last_name: decoded.last_name
     };
