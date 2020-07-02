@@ -2,7 +2,7 @@
 'use strict';
 
 const { Router } = require('express');
-const TaskService = require('../services/userService');
+const TaskService = require('../services/taskService');
 const responseMiddleware = require('../middlewares/response.middleware');
 const errorHandlingMiddleware = require('../middlewares/error.handling.middleware');
 const verifyAuth = require('../middlewares/verifyAuth.middleware');
@@ -24,7 +24,7 @@ const statuses = ['View', 'In Progress', 'Done'];
 
 router.post('/', verifyAuth, async (req, res, next) => {
   const {
-    user_id, title, description, status
+    title, description, status
   } = req.body;
 
   if (isEmpty(title) || isEmpty(description) || isEmpty(status)) {
@@ -41,14 +41,14 @@ router.post('/', verifyAuth, async (req, res, next) => {
     const body = {
       title,
       description,
-      status
+      status,
+      user_id: req.user.user_id
     };
-    body[user_id] = user_id ? user_id : req.user.user_id;
     const task = await TaskService.create(body);
     res.data = task;
     res.status(201);
   } catch (e) {
-    res.status(500);
+    res.status(400);
     return next(e);
   }
 
@@ -73,7 +73,7 @@ router.put('/:id', verifyAuth, async (req, res, next) => {
     }
   }
 
-  if (updates.status && !status.includes(updates.status)) {
+  if (req.query.status && !statuses.includes(req.query.status)) {
     res.status(400);
     return next(new Error('Status should be "View", "In progress" or "Done"'));
   }
@@ -92,7 +92,7 @@ router.put('/:id', verifyAuth, async (req, res, next) => {
       return next(new Error('Task not found'));
     }
   } catch (e) {
-    res.status(500);
+    res.status(400);
     return next(e);
   }
 
@@ -101,16 +101,16 @@ router.put('/:id', verifyAuth, async (req, res, next) => {
 
 router.put('/:task_id/:user_id', verifyAuth, async (req, res, next) => {
   try {
-    const task = await TaskService.updateUser(req.params.task_id, req.params.user_id);
+    const task = await TaskService.updateUser(req.params.task_id, req.user.user_id, req.params.user_id);
     if (task) {
       res.data = task;
       res.status(200);
     } else {
-      res.status(404);
-      return next(new Error('Incorrect task_id'));
+      res.status(400);
+      return next(new Error('Unable to update task owner'));
     }
   } catch (e) {
-    res.status(500);
+    res.status(400);
     return next(e);
   }
 
@@ -129,7 +129,7 @@ router.delete('/:id', verifyAuth, async (req, res, next) => {
       return next(new Error('Task not found'));
     }
   } catch (e) {
-    res.status(500);
+    res.status(400);
     return next(e);
   }
 

@@ -27,9 +27,9 @@ class TaskService {
     }
   }
 
-  async updateUser(taskId, userId) {
+  async updateUser(taskId, ownerId, newOwnerId) {
     try {
-      const task = await TaskRepository.updateUser(taskId, userId);
+      const task = await TaskRepository.updateUser(taskId, ownerId, newOwnerId);
       return task;
     } catch (e) {
       this.handleRepositoryError(e);
