@@ -1,6 +1,7 @@
 'use strict';
+/* eslint-disable camelcase */
 
-const BaseRepository = require('./baseRepository');
+const { BaseRepository, DBConnectionError } = require('./baseRepository');
 
 class UserRepository extends BaseRepository {
   constructor() {
@@ -22,22 +23,32 @@ class UserRepository extends BaseRepository {
       const { rows } = await client.query(text, values);
       client.release();
       return rows[0];
-    } catch (err) {
-      throw new Error('Database error occured while trying to create taskr');
+    } catch (e) {
+      if (e instanceof DBConnectionError) {
+        throw e;
+      }
+      throw new Error('Incorrect data passed to create user');
     }
   }
 
-  async getUserByEmail(email) {
+  async getOneUser(search) {
     try {
-      const text = 'SELECT * FROM users WHERE email = $1';
+      const column = search.email ? 'email' : 'user_id';
+      const text = `SELECT * FROM users WHERE ${column} = $1`;
+      const values = [search.email || search.user_id];
       const client = await this.getClient();
-      const { rows } = await client.query(text, [email]);
+      const { rows } = await client.query(text, values);
       client.release();
       return rows[0];
-    } catch (err) {
-      throw new Error('Database error occured while trying to create taskr');
+    } catch (e) {
+      if (e instanceof DBConnectionError) {
+        throw e;
+      }
+      throw new Error('Unable to get user');
     }
   }
+
+
 
   async update(userId, data) {
     const updates = data;
@@ -57,7 +68,10 @@ class UserRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (e) {
-      throw new Error('Database error occured while trying to update user');
+      if (e instanceof DBConnectionError) {
+        throw e;
+      }
+      throw new Error('Incorrect data passed to update user');
     }
   }
 
@@ -73,11 +87,12 @@ class UserRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (e) {
-      throw new Error('Database error occured while trying to delete user');
+      if (e instanceof DBConnectionError) {
+        throw e;
+      }
+      throw new Error('Unable to delete user');
     }
   }
-
-
 }
 
 module.exports = new UserRepository();

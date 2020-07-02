@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 'use strict';
 
-const BaseRepository = require('./baseRepository');
+const { BaseRepository, DBConnectionError } = require('./baseRepository');
 
 
 
@@ -21,7 +21,10 @@ class TaskRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (err) {
-      throw new Error('Database error occured while trying to create task');
+      if (err instanceof DBConnectionError) {
+        throw err;
+      }
+      throw new Error('Incorrect data passed to create task');
     }
   }
 
@@ -43,7 +46,10 @@ class TaskRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (e) {
-      throw new Error('Database error occured while trying to update task');
+      if (e instanceof DBConnectionError) {
+        throw e;
+      }
+      throw new Error('Incorrect data passed to update task');
     }
   }
 
@@ -58,7 +64,10 @@ class TaskRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (e) {
-      throw new Error('Database error occured while trying to update task owner');
+      if (e instanceof DBConnectionError) {
+        throw e;
+      }
+      throw new Error('Unable to update task owner');
     }
   }
 
@@ -72,7 +81,10 @@ class TaskRepository extends BaseRepository {
       client.release();
       return rows[0];
     } catch (e) {
-      throw new Error('Database error occured while trying to delete task');
+      if (e instanceof DBConnectionError) {
+        throw e;
+      }
+      throw new Error('Unable to delete task');
     }
   }
 }
