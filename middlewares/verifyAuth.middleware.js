@@ -10,23 +10,23 @@ const verifyToken = async (req, res, next) => {
     const token = req.header('Authorization').replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const email = decoded.email;
-    const dbRow = UserService.getOneUser({ email });
+    const dbRow = await UserService.getOneUser({ email });
     if (!dbRow) {
-      res.status(404);
-      next(new Error('There is no user with this email'));
+      throw new Error();
     }
     req.user = {
       user_id: decoded.user_id,
-      email: decoded.email,
       first_name: decoded.first_name,
-      last_name: decoded.last_name
+      last_name: decoded.last_name,
+      email: decoded.email,
+      creating_date: dbRow.creating_date
     };
   } catch (e) {
     res.status(401);
-    next(new Error('Authentication failed'));
+    return next(new Error('Authentication failed'));
   }
 
-  next();
+  return next();
 };
 
 module.exports = verifyToken;
