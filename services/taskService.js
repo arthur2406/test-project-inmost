@@ -9,6 +9,15 @@ class TaskService {
     throw e;
   }
 
+  async getTasks(status, sort) {
+    try {
+      const tasks = await TaskRepository.getTasks(status, sort);
+      return tasks;
+    } catch (e) {
+      this.handleRepositoryError(e);
+    }
+  }
+
   async create(data) {
     try {
       const task = await TaskRepository.create(data);

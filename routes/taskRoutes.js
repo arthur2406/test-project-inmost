@@ -10,17 +10,39 @@ const { isEmpty } = require('../helpers/validations');
 
 const router = Router();
 
-// GET /api/tasks/?status={status}&sortByUsers
-
-// router.get('/me', verifyAuth, async (req, res, next) => {
-//   try {
-//     const task = await TaskService.searchById(id);
-//   } catch (e) {
-
-//   }
-// });
+// GET /api/tasks/?status={status}&sortByUsers={new/old}
 
 const statuses = ['View', 'In Progress', 'Done'];
+
+router.get('/', verifyAuth, async (req, res, next) => {
+  try {
+    // eslint-disable-next-line prefer-const
+    let { sortByUsers: sort, status } = req.query;
+    if (status && !statuses.includes(status)) {
+      res.status(400);
+      return next(new Error('Status should be "View", "In progress" or "Done"'));
+    }
+
+    if (sort) {
+      if (!['new', 'old'].includes(sort)) {
+        res.status(400);
+        return next(new Error('sortByUsers values should be "new" or "old"'));
+      }
+      sort = sort === 'new' ? 'DESC' : 'ASC';
+    }
+
+    const tasks = await TaskService.getTasks(status, sort);
+    res.data = tasks;
+    res.status(200);
+  } catch (e) {
+    res.status(400);
+    return next(e);
+  }
+
+  return next();
+}, responseMiddleware);
+
+
 
 router.post('/', verifyAuth, async (req, res, next) => {
   const {
