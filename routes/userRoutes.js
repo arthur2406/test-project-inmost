@@ -18,14 +18,18 @@ const {
 const router = Router();
 
 // GET api/users/{page}/?items=10
-router.get('/:page', async (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
-    if (req.params.page < 1) {
+    if (req.query.page && req.query.page < 1) {
       res.status(400);
       return next(new Error('Page should be >= 1 '));
     }
-    const users = await UserService.getUsers(req.params.page, req.query.items || 10);
-    res.data = users;
+    const users = await UserService.getUsers(req.query.page || 1, req.query.items || 10);
+
+    res.data = users.map(u => {
+      delete u.password;
+      return u;
+    });
     res.status(200);
   } catch (err) {
     return next(err);
