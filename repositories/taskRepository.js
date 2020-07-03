@@ -10,6 +10,32 @@ class TaskRepository extends BaseRepository {
     super('tasks');
   }
 
+  async getTasks(status, sort) {
+    try {
+
+      let text =
+      'SELECT t.id as task_id, t.user_id, t.title, t.description, t.status, u.creating_date as user_creating_date ' +
+      `FROM ${this.collectionName} as t ` +
+      'JOIN users AS u ON u.user_id = t.user_id ';
+
+      const whereClause = status ? `WHERE status = '${status}' ` : '';
+      const orderClause = sort ? `ORDER BY u.creating_date ${sort} ` : '';
+
+      text += whereClause;
+      text += orderClause;
+
+      const client = await this.getClient();
+      const { rows } = await client.query(text);
+      client.release();
+      return rows;
+    } catch (e) {
+      if (e instanceof DBConnectionError) {
+        throw e;
+      }
+      throw new Error('Unable to fetch tasks');
+    }
+  }
+
 
   async create(data) {
     try {
@@ -56,17 +82,10 @@ class TaskRepository extends BaseRepository {
 
   async updateUser(taskId, ownerId, newOwnerId) {
     try {
-      // const query =
-      //   `IF EXISTS (SELECT 1 FROM users WHERE user_id = ${newOwnerId}) THEN ` +
-      //   `UPDATE ${this.collectionName} ` +
-      //   `SET user_id = ${newOwnerId} ` +
-      //   `WHERE id = ${taskId} AND user_id = ${ownerId} ` +
-      //   'RETURNING *; ' +
-      //   'END IF';
       const query =
         `UPDATE ${this.collectionName} ` +
         `SET user_id = ${newOwnerId} ` +
-        `WHERE id = ${taskId} AND user_id = ${ownerId} AND EXISTS (SELECT 1 FROM users WHERE user_id = ${newOwnerId})` +
+        `WHERE id = ${taskId} AND (user_id = ${ownerId} OR user_id IS NULL) AND EXISTS (SELECT 1 FROM users WHERE user_id = ${newOwnerId})` +
         'RETURNING *; ';
       const client = await this.getClient();
       const { rows } = await client.query(query);
