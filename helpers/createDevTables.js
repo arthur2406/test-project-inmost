@@ -1,6 +1,8 @@
 'use strict';
 
 const { Pool } = require('pg');
+const { sampleUsers, sampleTasks } = require('./sampleData');
+const { hashPassword } = require('./validations');
 require('dotenv').config();
 
 const pool = new Pool();
@@ -64,10 +66,54 @@ const createTasksTable = async () => {
   }
 };
 
+const truncateTables = async () => {
+  try {
+    await pool.query('TRUNCATE TABLE tasks, users RESTART identity');
+    // await pool.query('TRUNCATE TABLE users RESTART identity');
+  } catch (e) {
+    console.log('Error while truncating tables: ' + e.message);
+  }
+};
+
+const fillUsersTable = async () => {
+  try {
+    const client = await pool.connect();
+    for (const u of sampleUsers) {
+      const hashedPassword = hashPassword(u.password);
+      await client.query('INSERT INTO users (first_name, last_name, password, email) ' +
+      'VALUES($1, $2, $3, $4)', [u.first_name, u.last_name, hashedPassword, u.email]);
+    }
+    client.release();
+    console.log('Users successfully inserted');
+    return;
+  } catch (e) {
+    console.log('Error while filling the users table: ' + e.message);
+  }
+
+};
+
+const fillTasksTable = async () => {
+  try {
+    const client = await pool.connect();
+    for (const t of sampleTasks) {
+      await client.query('INSERT INTO tasks (user_id, title, description, status) ' +
+      'VALUES($1, $2, $3, $4)', [t.user_id, t.title, t.description, t.status]);
+    }
+    client.release();
+    console.log('Tasks successfully inserted');
+    return;
+  } catch (e) {
+    console.log('Error while filling the task table: ' + e.message);
+  }
+};
+
 const create = async () => {
   await createUsersTable();
   await createStatusType();
   await createTasksTable();
+  await truncateTables();
+  await fillUsersTable();
+  await fillTasksTable();
   pool.end();
 };
 
