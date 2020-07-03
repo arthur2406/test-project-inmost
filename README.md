@@ -15,7 +15,7 @@ JWT_SECRET=<secret key for jwt authentication>
 
 3. Install all packages with **npm install** command
 
-4. Run the **npm run setup** command to create neccessary tables and run the  
+4. Run the **npm run setup** command to create neccessary tables, fill them with sample data and run the  
 server
 
 >  API DOCUMENTATION: https://documenter.getpostman.com/view/9907431/T17FC9Mt?version=latest.
