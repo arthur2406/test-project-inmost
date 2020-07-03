@@ -92,8 +92,6 @@ class UserRepository extends BaseRepository {
     }
   }
 
-  //will not delete
-
   async delete(userId) {
     try {
       const query = `DELETE FROM ${this.collectionName} ` +
