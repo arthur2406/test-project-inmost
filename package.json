@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "debug": "node --inspect index.js",
-    "create-dev-tables": "node repositories/createDevTables.js",
+    "create-dev-tables": "node helpers/createDevTables.js",
     "setup": "npm-run-all -s create-dev-tables start"
   },
   "author": "Arthur Ryzhyy",

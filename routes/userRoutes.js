@@ -17,7 +17,15 @@ const {
 
 const router = Router();
 
-// GET api/users/{page}/?items=10
+// GET api/users/?page=3?items=10
+
+router.get('/me', verifyAuth, async (req, res, next) => {
+  res.data = req.user;
+  res.status(200);
+  return next();
+}, responseMiddleware);
+
+
 router.get('/', async (req, res, next) => {
   try {
     if (req.query.page && req.query.page < 1) {
@@ -34,12 +42,6 @@ router.get('/', async (req, res, next) => {
   } catch (err) {
     return next(err);
   }
-  return next();
-}, responseMiddleware);
-
-router.get('/me', verifyAuth, async (req, res, next) => {
-  res.data = req.user;
-  res.status(200);
   return next();
 }, responseMiddleware);
 
